@@ -41,7 +41,7 @@ jobs:
           xcodebuild -workspace src-tauri/gen/apple/tauritavern.xcodeproj/project.xcworkspace \
             -scheme tauritavern_iOS \
             -sdk iphoneos \
-            -configuration debug \
+            -configuration release \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
