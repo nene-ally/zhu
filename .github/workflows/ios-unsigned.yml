@@ -32,25 +32,13 @@ jobs:
         run: pnpm run check
       - name: Initialize iOS project
         run: pnpm exec tauri ios init
-      - name: Prepare Tauri iOS address file
-        run: |
-          printf "%s\n" "http://127.0.0.1:1420" > "${TMPDIR%/}/com.tauritavern.client-server-addr"
       - name: Build unsigned iOS app
         env:
           CODE_SIGNING_ALLOWED: NO
           CODE_SIGNING_REQUIRED: NO
-          DEVELOPMENT_TEAM: ''
+          DEVELOPMENT_TEAM: 
         run: |
-          xcodebuild -workspace src-tauri/gen/apple/tauritavern.xcodeproj/project.xcworkspace \
-            -scheme tauritavern_iOS \
-            -sdk iphoneos \
-            -configuration release \
-            CODE_SIGNING_ALLOWED=NO \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGN_IDENTITY="" \
-            DEVELOPMENT_TEAM="" \
-            PROVISIONING_PROFILE_SPECIFIER="" \
-            build
+          pnpm exec tauri ios build --release --ci
       - name: Package unsigned app artifact
         shell: bash
         run: |
