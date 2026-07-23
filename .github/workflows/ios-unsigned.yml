@@ -32,6 +32,9 @@ jobs:
         run: pnpm run check
       - name: Initialize iOS project
         run: pnpm exec tauri ios init
+      - name: Prepare Tauri iOS address file
+        run: |
+          printf "%s\n" "http://127.0.0.1:1420" > "${TMPDIR%/}/com.tauritavern.client-server-addr"
       - name: Build unsigned iOS app
         env:
           CODE_SIGNING_ALLOWED: NO
