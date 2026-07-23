@@ -12,9 +12,13 @@ on:
 
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
+      - name: Select stable Xcode
+        run: |
+          if [ -d /Applications/Xcode_16.4.app ]; then sudo xcode-select -s /Applications/Xcode_16.4.app/Contents/Developer; elif [ -d /Applications/Xcode_16.3.app ]; then sudo xcode-select -s /Applications/Xcode_16.3.app/Contents/Developer; else ls -d /Applications/Xcode*.app; exit 1; fi
+          xcodebuild -version
       - uses: pnpm/action-setup@v4
         with:
           version: 10
