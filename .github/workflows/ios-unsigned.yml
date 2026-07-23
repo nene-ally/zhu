@@ -124,6 +124,11 @@ jobs:
           fi
           ditto -c -k --sequesterRsrc --keepParent "$app_path" artifacts/tauritavern-ios-unsigned.app.zip
           test -s artifacts/tauritavern-ios-unsigned.app.zip
+          mkdir -p artifacts/Payload
+          cp -R "$app_path" artifacts/Payload/TauriTavern.app
+          (cd artifacts && zip -qry tauritavern-ios-unsigned.ipa Payload)
+          test -s artifacts/tauritavern-ios-unsigned.ipa
+          rm -rf artifacts/Payload
       - uses: actions/upload-artifact@v4
         with:
           name: tauritavern-ios-unsigned
