@@ -30,6 +30,8 @@ jobs:
         run: pnpm run web:build
       - name: Frontend checks
         run: pnpm run check
+      - name: Initialize iOS project
+        run: pnpm exec tauri ios init
       - name: Build unsigned iOS app
         env:
           CODE_SIGNING_ALLOWED: NO
