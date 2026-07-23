@@ -26,6 +26,8 @@ jobs:
       - uses: actions-rust-lang/setup-rust-toolchain@v1
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+      - name: Build frontend bundles
+        run: pnpm run web:build
       - name: Frontend checks
         run: pnpm run check
       - name: Build unsigned iOS app
