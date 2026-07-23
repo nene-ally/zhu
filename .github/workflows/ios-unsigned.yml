@@ -38,7 +38,7 @@ jobs:
           CODE_SIGNING_REQUIRED: NO
           DEVELOPMENT_TEAM: 
         run: |
-          pnpm exec tauri ios build --release --ci
+          pnpm exec tauri ios build --ci
       - name: Package unsigned app artifact
         shell: bash
         run: |
