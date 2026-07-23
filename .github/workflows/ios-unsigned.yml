@@ -32,6 +32,17 @@ jobs:
         run: pnpm run check
       - name: Initialize iOS project
         run: pnpm exec tauri ios init
+      - name: Disable Xcode signing
+        run: |
+          python3 - <<PY
+          from pathlib import Path
+          p = Path("src-tauri/gen/apple/tauritavern.xcodeproj/project.pbxproj")
+          s = p.read_text()
+          additions = "\n\t\t\t\tCODE_SIGNING_ALLOWED = NO;\n\t\t\t\tCODE_SIGNING_REQUIRED = NO;\n\t\t\t\tCODE_SIGN_IDENTITY = \"\";\n\t\t\t\tDEVELOPMENT_TEAM = \"\";"
+          if "CODE_SIGNING_ALLOWED = NO;" not in s:
+              s = s.replace("\n\t\t\t\tPRODUCT_BUNDLE_IDENTIFIER =", additions + "\n\t\t\t\tPRODUCT_BUNDLE_IDENTIFIER =")
+          p.write_text(s)
+          PY
       - name: Build unsigned iOS app
         env:
           CODE_SIGNING_ALLOWED: NO
