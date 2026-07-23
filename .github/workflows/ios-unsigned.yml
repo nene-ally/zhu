@@ -10,6 +10,10 @@ on:
       - 'package.json'
       - 'pnpm-lock.yaml'
 
+concurrency:
+  group: ios-unsigned-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: macos-14
@@ -36,6 +40,18 @@ jobs:
           node-version: 20
           cache: pnpm
       - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          targets: aarch64-apple-ios
+      - name: Cache Cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            src-tauri/target
+          key: ${{ runner.os }}-cargo-ios-${{ hashFiles('src-tauri/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-ios-
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       - name: Build frontend bundles
@@ -44,6 +60,29 @@ jobs:
         run: pnpm run check
       - name: Initialize iOS project
         run: pnpm exec tauri ios init
+      - name: Build Rust static library
+        run: |
+          set -euo pipefail
+          cargo build --locked --release --target aarch64-apple-ios --manifest-path src-tauri/Cargo.toml
+          mkdir -p src-tauri/gen/apple/Externals/arm64/release
+          cp src-tauri/target/aarch64-apple-ios/release/libtauritavern_lib.a \
+            src-tauri/gen/apple/Externals/arm64/release/libapp.a
+          test -s src-tauri/gen/apple/Externals/arm64/release/libapp.a
+      - name: Use prebuilt Rust library in Xcode
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          project = Path("src-tauri/gen/apple/tauritavern.xcodeproj/project.pbxproj")
+          lines = project.read_text().splitlines(keepends=True)
+          for index, line in enumerate(lines):
+              if "tauri-ios-xcode-script.sh" in line:
+                  lines[index] = '\t\t\tshellScript = "test -f \\\"${SRCROOT}/Externals/arm64/${CONFIGURATION}/libapp.a\\\"";\n'
+                  break
+          else:
+              raise SystemExit("Tauri Rust build phase was not found")
+          project.write_text("".join(lines))
+          PY
       - name: Disable Xcode signing
         run: |
           python3 - <<PY
@@ -61,19 +100,30 @@ jobs:
           CODE_SIGNING_REQUIRED: NO
           DEVELOPMENT_TEAM: 
         run: |
-          pnpm exec tauri ios build --ci
+          set -euo pipefail
+          xcodebuild \
+            -workspace src-tauri/gen/apple/tauritavern.xcodeproj/project.xcworkspace \
+            -scheme tauritavern_iOS \
+            -sdk iphoneos \
+            -configuration Release \
+            -derivedDataPath "$RUNNER_TEMP/tauritavern-derived-data" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            DEVELOPMENT_TEAM="" \
+            build
       - name: Package unsigned app artifact
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p artifacts
-          app_path="$(find src-tauri/gen/apple -type d -name '*.app' -print -quit)"
-          if [[ -z "$app_path" ]]; then
-            echo 'No .app produced by Tauri iOS build' >&2
+          app_path="$RUNNER_TEMP/tauritavern-derived-data/Build/Products/Release-iphoneos/TauriTavern.app"
+          if [[ ! -d "$app_path" ]]; then
+            echo "No unsigned .app produced at $app_path" >&2
             exit 1
           fi
           ditto -c -k --sequesterRsrc --keepParent "$app_path" artifacts/tauritavern-ios-unsigned.app.zip
-          find src-tauri/gen/apple -type f -name '*.ipa' -exec cp {} artifacts/ \;
+          test -s artifacts/tauritavern-ios-unsigned.app.zip
       - uses: actions/upload-artifact@v4
         with:
           name: tauritavern-ios-unsigned

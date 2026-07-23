@@ -52,7 +52,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\export-sillytavern-migration.
 - `check-frontend-guardrails.mjs`
   校验前端宿主层文件规模和依赖边界，避免 Host Kernel 持续膨胀。对应 `pnpm run check:frontend`。
 - `tauri-ios-xcode-script.sh`
-  包装 `tauri ios xcode-script`，补齐 Xcode GUI 构建环境中的 PATH / Node / pnpm，并在构建后处理 iOS 图标。
+  包装 `tauri ios xcode-script`，补齐 Xcode GUI 构建环境中的 PATH / Node / pnpm。
 - `generate-ios-app-icon-variants.swift`
   从 `src-tauri/icons/icon.png` 生成 iOS `Any` / `Dark` / `Tinted` 三个 1024px App Icon 源图。
 - `ios-policy.mjs`
