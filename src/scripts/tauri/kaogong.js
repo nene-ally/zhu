@@ -1,4 +1,4 @@
-import { POPUP_TYPE } from '../../../popup.js';
+import { POPUP_TYPE } from '../popup.js';
 import { getKaogongData, saveKaogongData } from '../../tauri-bridge.js';
 import { callTauriTavernPanelPopup } from './setting/panel-popup.js';
 import { summarizeLast7Days, toggleWrongQuestion } from './kaogong-logic.js';
