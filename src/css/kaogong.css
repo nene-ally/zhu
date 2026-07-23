@@ -1,0 +1,8 @@
+.kaogong-panel { min-width: min(680px, 90vw); }
+.kaogong-form { display: grid; grid-template-columns: 90px 1fr; gap: 8px; align-items: center; }
+.kaogong-form label { color: var(--SmartThemeQuoteColor); }
+.kaogong-form textarea, .kaogong-form button { grid-column: 2; }
+.kaogong-feedback { min-height: 1.4em; color: var(--SmartThemeQuoteColor); }
+.kaogong-stat-row, .kaogong-wrong-row { display: flex; justify-content: space-between; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--SmartThemeBorderColor); }
+.kaogong-wrong-row button { flex: 0 0 auto; }
+.kaogong-empty { opacity: .7; padding: 8px 0; }
